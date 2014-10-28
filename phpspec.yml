@@ -1,0 +1,4 @@
+suites:
+    default:
+        namespace: TH\OAuth2
+        psr4_prefix: TH\OAuth2

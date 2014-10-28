@@ -1,0 +1,31 @@
+{
+    "name": "texthtml/oauth2-provider",
+    "description": "OAuth2 provider for the Symfony Security component",
+    "require": {
+        "symfony/security": "~2.5",
+        "bshaffer/oauth2-server-php": "~1.5",
+        "bshaffer/oauth2-server-httpfoundation-bridge": "~1.0"
+    },
+    "require-dev": {
+        "silex/silex": "~2.0@dev",
+        "pimple/pimple": "~3.0",
+        "phpspec/phpspec": "~2.0",
+        "php-vfs/php-vfs": "~1.2"
+    },
+    "suggest": {
+        "silex/silex": "Provide a light framework to build PHP applications"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mathieu Rochette",
+            "email": "mathieu@rochette.cc"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "TH\\OAuth2\\": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
