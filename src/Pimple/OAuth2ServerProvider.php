@@ -70,12 +70,14 @@ class OAuth2ServerProvider implements ServiceProviderInterface, ControllerProvid
             $realm = $container['security.entry_point.'.$name.'.oauth2.realm'];
             $container['security.entry_point.'.$name.'.oauth2'] = new OAuth2EntryPoint($realm);
         }
-
         $this->registerAuthenticationListener($container, $name);
-
         if (!isset($container['security.authentication_provider.'.$name.'.dao'])) {
-            $container['security.authentication_provider.'.$name.'.dao'] = function () {
-                return new OAuth2AuthentificationProvider;
+            $container['security.authentication_provider.'.$name.'.dao'] = function () use ($container, $name) {
+                return new OAuth2AuthentificationProvider(
+                    $container['security.user_provider.'.$name],
+                    $container['security.user_checker'],
+                    $name
+                );
             };
         }
     }
@@ -86,7 +88,7 @@ class OAuth2ServerProvider implements ServiceProviderInterface, ControllerProvid
             $authListener = function () use ($container, $name) {
                 return new OAuth2AuthenticationListener(
                     $container['oauth2_server'],
-                    $container['security'],
+                    $container['security.token_storage'],
                     $container['security.authentication_manager'],
                     $name,
                     $container['security.entry_point.'.$name.'.oauth2'],

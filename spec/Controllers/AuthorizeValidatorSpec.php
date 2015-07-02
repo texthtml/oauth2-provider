@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
-use Symfony\Component\Security\Core\SecurityContextInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use OAuth2\Controller\AuthorizeControllerInterface;
 use OAuth2\HttpFoundationBridge\Response as BridgeResponse;
 use TH\OAuth2\AuthorizeRenderer;
@@ -67,7 +67,7 @@ class AuthorizeValidatorSpec extends ObjectBehavior
         Request $request,
         ParameterBag $queryBag,
         BridgeResponse $response,
-        SecurityContextInterface $securityContext
+        TokenStorageInterface $tokenStorage
     ) {
         $responseArgument = Argument::type('OAuth2\HttpFoundationBridge\Response');
         $requestArgument = Argument::type('OAuth2\HttpFoundationBridge\Request');
@@ -80,7 +80,7 @@ class AuthorizeValidatorSpec extends ObjectBehavior
             'response_type' => 'responseType',
         ]);
 
-        $app->offsetGet('security')->willReturn($securityContext);
+        $app->offsetGet('security.token_storage')->willReturn($tokenStorage);
         $authorizeRenderer->render(
             '/url',
             'clientId',
@@ -99,7 +99,7 @@ class AuthorizeValidatorSpec extends ObjectBehavior
         Request $request,
         ParameterBag $queryBag,
         BridgeResponse $response,
-        SecurityContextInterface $securityContext,
+        TokenStorageInterface $tokenStorage,
         TokenInterface $token
     ) {
         $responseArgument = Argument::type('OAuth2\HttpFoundationBridge\Response');
@@ -113,8 +113,8 @@ class AuthorizeValidatorSpec extends ObjectBehavior
             'response_type' => 'responseType',
         ]);
 
-        $app->offsetGet('security')->willReturn($securityContext);
-        $securityContext->getToken()->willReturn($token);
+        $app->offsetGet('security.token_storage')->willReturn($tokenStorage);
+        $tokenStorage->getToken()->willReturn($token);
         $token->getUser()->willReturn('user');
         $authorizeRenderer->render(
             '/url',
