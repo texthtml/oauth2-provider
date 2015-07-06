@@ -5,7 +5,7 @@ namespace spec\TH\OAuth2\Controllers;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ParameterBag;
-use Symfony\Component\Security\Core\SecurityContextInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use OAuth2\Controller\AuthorizeControllerInterface;
 use TH\OAuth2\AuthorizeRenderer;
 use PhpSpec\ObjectBehavior;
@@ -46,9 +46,9 @@ class AuthorizeHandlerSpec extends ObjectBehavior
         ParameterBag $requestBag,
         Application $app,
         Request $request,
-        SecurityContextInterface $securityContext
+        TokenStorageInterface $tokenStorage
     ) {
-        $app->offsetGet('security')->willReturn($securityContext);
+        $app->offsetGet('security.token_storage')->willReturn($tokenStorage);
         $requestBag->all()->willReturn(['authorize' => '1']);
 
         $responseArgument = Argument::type('OAuth2\HttpFoundationBridge\Response');
@@ -70,9 +70,9 @@ class AuthorizeHandlerSpec extends ObjectBehavior
         ParameterBag $requestBag,
         Application $app,
         Request $request,
-        SecurityContextInterface $securityContext
+        TokenStorageInterface $tokenStorage
     ) {
-        $app->offsetGet('security')->willReturn($securityContext);
+        $app->offsetGet('security.token_storage')->willReturn($tokenStorage);
         $requestBag->all()->willReturn(['authorize' => '0']);
 
         $responseArgument = Argument::type('OAuth2\HttpFoundationBridge\Response');

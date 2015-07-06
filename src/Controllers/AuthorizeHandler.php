@@ -26,7 +26,7 @@ class AuthorizeHandler
 
     public function __invoke(Application $app, Request $request)
     {
-        $token = $app['security']->getToken();
+        $token = $app['security.token_storage']->getToken();
         $user = null;
 
         if ($token instanceof TokenInterface) {

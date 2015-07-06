@@ -2,7 +2,7 @@
 
 namespace TH\OAuth2;
 
-use Symfony\Component\Security\Core\SecurityContextInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\AuthenticationManagerInterface;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
 class OAuth2AuthenticationListener
 {
     private $oauth2Server;
-    private $securityContext;
+    private $tokenStorage;
     private $authenticationManager;
     private $providerKey;
     private $authenticationEntryPoint;
@@ -24,7 +24,7 @@ class OAuth2AuthenticationListener
 
     public function __construct(
         Server $oauth2Server,
-        SecurityContextInterface $securityContext,
+        TokenStorageInterface $tokenStorage,
         AuthenticationManagerInterface $authenticationManager,
         $providerKey,
         AuthenticationEntryPointInterface $authenticationEntryPoint,
@@ -36,7 +36,7 @@ class OAuth2AuthenticationListener
             throw new \InvalidArgumentException('$providerKey must not be empty.');
         }
 
-        $this->securityContext = $securityContext;
+        $this->tokenStorage = $tokenStorage;
         $this->authenticationManager = $authenticationManager;
         $this->providerKey = $providerKey;
         $this->authenticationEntryPoint = $authenticationEntryPoint;
@@ -59,8 +59,11 @@ class OAuth2AuthenticationListener
         }
 
         try {
-            $token = $this->authenticationManager->authenticate(new OAuth2Token([]));
-            $this->securityContext->setToken($token);
+            $token = $this->oauth2Server->getAccessTokenData($request);
+            $token = $this->authenticationManager->authenticate(
+                new OAuth2Token($token['user_id'], $token['access_token'], $this->providerKey)
+            );
+            $this->tokenStorage->setToken($token);
         } catch (AuthenticationException $failed) {
             $this->handleAuthenticationError($event, $request, $failed);
         }
@@ -71,9 +74,9 @@ class OAuth2AuthenticationListener
         BridgeRequest $request,
         AuthenticationException $failed
     ) {
-        $token = $this->securityContext->getToken();
+        $token = $this->tokenStorage->getToken();
         if ($token instanceof OAuth2Token) {
-            $this->securityContext->setToken(null);
+            $this->tokenStorage->setToken(null);
         }
 
         $this->logger->info(sprintf('Authentication request failed : %s', $failed->getMessage()));

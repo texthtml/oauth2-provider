@@ -38,7 +38,7 @@ class AuthorizeValidator
             return $response;
         }
 
-        $token = $app['security']->getToken();
+        $token = $app['security.token_storage']->getToken();
         $user = null;
 
         if ($token instanceof TokenInterface) {
