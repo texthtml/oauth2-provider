@@ -164,21 +164,19 @@ class OAuth2ServerProvider implements ServiceProviderInterface, ControllerProvid
     public function connect(Application $app)
     {
         $controllers = $app['controllers_factory'];
-
         $authorizeHandlerController = new Controllers\AuthorizeHandler(
             $app['oauth2_server']->getAuthorizeController(),
             $app['oauth2_server.authorize_renderer']
         );
-
         $controllers->post('/authorize', $authorizeHandlerController)->bind('oauth2_authorize_handler');
-
         $authorizeValidatorController = new Controllers\AuthorizeValidator(
             $app['url_generator'],
             $app['oauth2_server']->getAuthorizeController(),
             $app['oauth2_server.authorize_renderer']
         );
-
         $controllers->get('/authorize', $authorizeValidatorController)->bind('oauth2_authorize_validator');
+        $tokenHandlerController = new Controllers\TokenHandler($app['oauth2_server']->getTokenController());
+        $controllers->post('/token', $tokenHandlerController)->bind('oauth2_token_handler');
 
         return $controllers;
     }
