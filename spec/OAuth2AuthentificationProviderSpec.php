@@ -18,6 +18,7 @@ class OAuth2AuthentificationProviderSpec extends ObjectBehavior
         $token->getUser()->willReturn(null);
         $token->getCredentials()->willReturn("access_token");
         $token->getRoles()->willReturn([]);
+        $token->getClient()->willReturn('client_id');
         $user->getRoles()->willReturn(["IF_FULLY_AUTHENTIFICATED"]);
         $token->getAttributes()->willReturn([]);
         $this->beConstructedWith($userProvider, $userChecker, 'provider_key');
