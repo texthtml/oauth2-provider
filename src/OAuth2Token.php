@@ -9,16 +9,21 @@ class OAuth2Token extends AbstractToken implements TokenInterface
 {
     private $credentials;
     private $providerKey;
+    private $client;
 
-    public function __construct($user, $credentials, $providerKey, array $roles = [])
+    public function __construct($client, $user, $credentials, $providerKey, array $roles = [])
     {
         parent::__construct($roles);
+
+        $this->client = $client;
 
         if (empty($providerKey)) {
             throw new \InvalidArgumentException('$providerKey must not be empty.');
         }
 
-        $this->setUser($user);
+        if (null !== $user) {
+            $this->setUser($user);
+        }
         $this->credentials = $credentials;
         $this->providerKey = $providerKey;
 
@@ -34,5 +39,10 @@ class OAuth2Token extends AbstractToken implements TokenInterface
     public function getProviderKey()
     {
         return $this->providerKey;
+    }
+
+    public function getClient()
+    {
+        return $this->client;
     }
 }

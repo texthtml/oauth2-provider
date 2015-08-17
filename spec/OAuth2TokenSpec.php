@@ -9,7 +9,7 @@ class OAuth2TokenSpec extends ObjectBehavior
 {
     public function let()
     {
-        $this->beConstructedWith('user_name', 'access_token', 'provider_key');
+        $this->beConstructedWith('client_id', 'user_name', 'access_token', 'provider_key');
     }
 
     public function it_is_initializable()

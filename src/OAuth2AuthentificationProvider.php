@@ -39,38 +39,47 @@ class OAuth2AuthentificationProvider implements AuthenticationProviderInterface
 
     public function authenticate(TokenInterface $token)
     {
+        $user = null;
         if (!$this->supports($token)) {
             return;
         }
 
         $username = $token->getUsername();
-        if (empty($username)) {
-            $username = 'NONE_PROVIDED';
+        if (!empty($username)) {
+
+            $user = $this->retrieveUser($username, $token);
+
+            if (!$user instanceof UserInterface) {
+                throw new AuthenticationServiceException('retrieveUser() must return a UserInterface.');
+            }
+
+            $this->checkUser($user);
         }
 
-        $user = $this->retrieveUser($username, $token);
-
-        if (!$user instanceof UserInterface) {
-            throw new AuthenticationServiceException('retrieveUser() must return a UserInterface.');
-        }
-
-        $this->checkUser($user);
-
-        return $this->authenticatedToken($user, $token);
+        return $this->authenticatedToken($token, $user);
     }
 
-    private function authenticatedToken(UserInterface $user, TokenInterface $token) {
+    private function authenticatedToken(TokenInterface $token, UserInterface $user = null)
+    {
+        if (!$token instanceof OAuth2Token) {
+            throw new Exception ("token should be instance of OAuth2Token");
+        }
+
         $authenticatedToken = new OAuth2Token(
+            $token->getClient(),
             $user,
             $token->getCredentials(),
             $this->providerKey,
-            $this->getRoles($user, $token)
+            $this->getRoles($token, $user)
         );
         $authenticatedToken->setAttributes($token->getAttributes());
 
         return $authenticatedToken;
     }
 
+    /**
+     * @param string $username
+     */
     private function retrieveUser($username, TokenInterface $token)
     {
         $user = $token->getUser();
@@ -89,6 +98,9 @@ class OAuth2AuthentificationProvider implements AuthenticationProviderInterface
         }
     }
 
+    /**
+     * @param string $username
+     */
     private function hideUserNotFoundExceptions(UsernameNotFoundException $notFound, $username)
     {
         if ($this->hideUserNotFoundExceptions) {
@@ -98,8 +110,12 @@ class OAuth2AuthentificationProvider implements AuthenticationProviderInterface
         throw $notFound;
     }
 
-    private function getRoles(UserInterface $user, TokenInterface $token)
+    private function getRoles(TokenInterface $token, UserInterface $user = null)
     {
+        if (null === $user) {
+            return [];
+        }
+
         $roles = $user->getRoles();
 
         foreach ($token->getRoles() as $role) {
@@ -113,6 +129,9 @@ class OAuth2AuthentificationProvider implements AuthenticationProviderInterface
         return $roles;
     }
 
+    /**
+     * @param string $username
+     */
     private function getUser($username)
     {
         $user = $this->userProvider->loadUserByUsername($username);
