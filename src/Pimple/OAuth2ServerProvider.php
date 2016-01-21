@@ -40,6 +40,8 @@ class OAuth2ServerProvider implements ServiceProviderInterface, ControllerProvid
 
         $container['oauth2_server'] = $this->OAuth2Server($container);
 
+        $this->setupControllers($container);
+
         $container['oauth2_server.authorize_renderer.view'] = __DIR__ . '/../../views/authorize.php';
 
         $container['oauth2_server.authorize_renderer'] = function (Container $container) {
@@ -160,25 +162,52 @@ class OAuth2ServerProvider implements ServiceProviderInterface, ControllerProvid
         };
     }
 
+    private function setupControllers(Container $container) {
+        $container['oauth2_server.controllers_as_service'] = false;
+        $container['oauth2_server.controllers.authorize'] = function (Container $container) {
+            return new Controllers\AuthorizeHandler(
+                $container['oauth2_server']->getAuthorizeController(),
+                $container['oauth2_server.authorize_renderer']
+            );
+        };
+        $container['oauth2_server.controllers.authorize_validator'] = function (Container $container) {
+            return new Controllers\AuthorizeValidator(
+                $container['url_generator'],
+                $container['oauth2_server']->getAuthorizeController(),
+                $container['oauth2_server.authorize_renderer']
+            );
+        };
+        $container['oauth2_server.controllers.authorize_handler'] = function (Container $container) {
+            return new Controllers\AuthorizeHandler(
+                $container['oauth2_server']->getAuthorizeController(),
+                $container['oauth2_server.authorize_renderer']
+            );
+        };
+        $container['oauth2_server.controllers.token'] = function (Container $container) {
+            return new Controllers\TokenHandler($container['oauth2_server']->getTokenController());
+        };
+    }
+
     /**
      * @inherit
      */
     public function connect(Application $app)
     {
         $controllers = $app['controllers_factory'];
-        $authorizeHandlerController = new Controllers\AuthorizeHandler(
-            $app['oauth2_server']->getAuthorizeController(),
-            $app['oauth2_server.authorize_renderer']
-        );
-        $controllers->post('/authorize', $authorizeHandlerController)->bind('oauth2_authorize_handler');
-        $authorizeValidatorController = new Controllers\AuthorizeValidator(
-            $app['url_generator'],
-            $app['oauth2_server']->getAuthorizeController(),
-            $app['oauth2_server.authorize_renderer']
-        );
-        $controllers->get('/authorize', $authorizeValidatorController)->bind('oauth2_authorize_validator');
-        $tokenHandlerController = new Controllers\TokenHandler($app['oauth2_server']->getTokenController());
-        $controllers->post('/token', $tokenHandlerController)->bind('oauth2_token_handler');
+
+        if ($app['oauth2_server.controllers_as_service']) {
+            $controllers->post('/authorize', 'oauth2_server.controllers.authorize_handler:__invoke')
+                ->bind('oauth2_authorize_handler');
+            $controllers->get('/authorize', 'oauth2_server.controllers.authorize_validator:__invoke')
+                ->bind('oauth2_authorize_validator');
+            $controllers->post('/token', 'oauth2_server.controllers.token:__invoke')->bind('oauth2_token_handler');
+        } else {
+            $controllers->post('/authorize', $app['oauth2_server.controllers.authorize_handler'])
+                ->bind('oauth2_authorize_handler');
+            $controllers->get('/authorize', $app['oauth2_server.controllers.authorize_validator'])
+                ->bind('oauth2_authorize_validator');
+            $controllers->post('/token', $app['oauth2_server.controllers.token'])->bind('oauth2_token_handler');
+        }
 
         return $controllers;
     }
