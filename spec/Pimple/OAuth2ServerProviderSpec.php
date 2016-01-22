@@ -46,6 +46,11 @@ class OAuth2ServerProviderSpec extends ObjectBehavior
         $container->offsetSet('oauth2_server', $callable)->shouldBeCalled();
         $container->offsetSet('oauth2_server.authorize_renderer', $callable)->shouldBeCalled();
         $container->offsetSet('oauth2_server.authorize_renderer.view', $viewPath)->shouldBeCalled();
+        $container->offsetSet('oauth2_server.controllers_as_service', false)->shouldBeCalled();
+        $container->offsetSet('oauth2_server.controllers.authorize', $callable)->shouldBeCalled();
+        $container->offsetSet('oauth2_server.controllers.authorize_validator', $callable)->shouldBeCalled();
+        $container->offsetSet('oauth2_server.controllers.authorize_handler', $callable)->shouldBeCalled();
+        $container->offsetSet('oauth2_server.controllers.token', $callable)->shouldBeCalled();
 
         $this->register($container);
     }
