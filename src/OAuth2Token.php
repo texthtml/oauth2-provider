@@ -11,7 +11,7 @@ class OAuth2Token extends AbstractToken implements TokenInterface
     private $providerKey;
     private $client;
 
-    public function __construct($client, $user, $credentials, $providerKey, array $roles = [])
+    public function __construct($client, $user, $credentials, $providerKey, array $roles = [], array $scopes = [])
     {
         parent::__construct($roles);
 
@@ -26,6 +26,7 @@ class OAuth2Token extends AbstractToken implements TokenInterface
         }
         $this->credentials = $credentials;
         $this->providerKey = $providerKey;
+        $this->setAttribute('scopes', $scopes);
 
         $this->setAuthenticated(count($roles) > 0);
     }

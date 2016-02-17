@@ -70,7 +70,8 @@ class OAuth2AuthentificationProvider implements AuthenticationProviderInterface
             $user,
             $token->getCredentials(),
             $this->providerKey,
-            $this->getRoles($token, $user)
+            $this->getRoles($token, $user),
+            $token->hasAttribute('scopes') ? $token->getAttribute('scopes') : []
         );
         $authenticatedToken->setAttributes($token->getAttributes());
 

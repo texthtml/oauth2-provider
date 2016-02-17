@@ -61,7 +61,14 @@ class OAuth2AuthenticationListener
         try {
             $token = $this->oauth2Server->getAccessTokenData($request);
             $token = $this->authenticationManager->authenticate(
-                new OAuth2Token($token['client_id'], $token['user_id'], $token['access_token'], $this->providerKey)
+                new OAuth2Token(
+                    $token['client_id'],
+                    $token['user_id'],
+                    $token['access_token'],
+                    $this->providerKey,
+                    [],
+                    explode(" ", $token['scope'])
+                )
             );
             $this->tokenStorage->setToken($token);
         } catch (AuthenticationException $failed) {
