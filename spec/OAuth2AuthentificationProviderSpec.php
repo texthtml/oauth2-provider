@@ -16,6 +16,8 @@ class OAuth2AuthentificationProviderSpec extends ObjectBehavior
         $token->getProviderKey()->willReturn('provider_key');
         $token->getUsername()->willReturn('user_name');
         $token->getUser()->willReturn(null);
+        $token->hasAttribute('scopes')->willReturn(true);
+        $token->getAttribute('scopes')->willReturn([]);
         $token->getCredentials()->willReturn("access_token");
         $token->getRoles()->willReturn([]);
         $token->getClient()->willReturn('client_id');
