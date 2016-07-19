@@ -19,10 +19,10 @@ composer require texthtml/oauth2-provider
 ```
 
 
-Usage with Silex
-----------------
+Usage with Silex 2
+------------------
 
-There is a Pimple provider you can use to secure Silex apps
+There is a Pimple provider you can use to secure Silex apps. You need to install Silex 2: `composer require silex/silex "^2.0"`
 
 ```php
 $app = new Silex\Application;
@@ -70,3 +70,12 @@ $app->register(new Silex\Provider\SecurityServiceProvider, [
     ],
 ]);
 ```
+
+Usage with other frameworks
+---------------------------
+
+This package can be used with any framework using the Symfony Security component (eg: Symfony, Laravel, Silex, etc.).
+But the provider `TH\OAuth2\Pimple\OAuth2ServerProvider` only works for Silex 2. For other frameworks you'll have to
+manually register the services and mount the routes.
+
+PRs for providers for such frameworks are welcome!
