@@ -7,7 +7,7 @@
         "bshaffer/oauth2-server-httpfoundation-bridge": "^1.0"
     },
     "require-dev": {
-        "silex/silex": "^2.0@dev",
+        "silex/silex": "^2.0",
         "pimple/pimple": "^3.0",
         "phpspec/phpspec": "^2.0",
         "php-vfs/php-vfs": "^1.2"
