@@ -2,31 +2,31 @@
 
 namespace TH\OAuth2\Pimple;
 
+use OAuth2\Server;
+use OAuth2\Storage;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
-use Silex\Application;
 use Silex\Api\ControllerProviderInterface;
-use OAuth2\Server;
-use TH\OAuth2\OAuth2AuthentificationProvider;
-use TH\OAuth2\OAuth2EntryPoint;
-use TH\OAuth2\OAuth2AuthenticationListener;
+use Silex\Application;
 use TH\OAuth2\Controllers;
 use TH\OAuth2\HTMLAuthorizeRenderer;
-use OAuth2\Storage\Pdo;
+use TH\OAuth2\OAuth2AuthenticationListener;
+use TH\OAuth2\OAuth2AuthentificationProvider;
+use TH\OAuth2\OAuth2EntryPoint;
 
 class OAuth2ServerProvider implements ServiceProviderInterface, ControllerProviderInterface
 {
     private $storagesTypes = [
-        'access_token',
-        'authorization_code',
-        'client_credentials',
-        'client',
-        'refresh_token',
-        'user_credentials',
-        'user_claims',
-        'public_key',
-        'jwt_bearer',
-        'scope',
+        'access_token'       => Storage\AccessTokenInterface::class,
+        'authorization_code' => Storage\AuthorizationCodeInterface::class,
+        'client_credentials' => Storage\ClientCredentialsInterface::class,
+        'client'             => Storage\ClientInterface::class,
+        'refresh_token'      => Storage\RefreshTokenInterface::class,
+        'user_credentials'   => Storage\UserCredentialsInterface::class,
+        'user_claims'        => Storage\UserClaimsInterface::class,
+        'public_key'         => Storage\PublicKeyInterface::class,
+        'jwt_bearer'         => Storage\JwtBearerInterface::class,
+        'scope'              => Storage\ScopeInterface::class,
     ];
 
     /**
@@ -106,7 +106,7 @@ class OAuth2ServerProvider implements ServiceProviderInterface, ControllerProvid
         $container['oauth2_server.parameters'] = [];
 
         $container['oauth2_server.storage.default'] = function (Container $container) {
-            return new Pdo($container['oauth2_server.storage.pdo_connection']);
+            return new Storage\Pdo($container['oauth2_server.storage.pdo_connection']);
         };
 
         $container['oauth2_server.storage.types'] = ['client', 'access_token'];
@@ -119,9 +119,11 @@ class OAuth2ServerProvider implements ServiceProviderInterface, ControllerProvid
             return $storages;
         };
 
-        foreach ($this->storagesTypes as $storageType) {
-            $container['oauth2_server.storage.'.$storageType] = function (Container $container) {
-                return $container['oauth2_server.storage.default'];
+        foreach ($this->storagesTypes as $storageType => $storageInterface) {
+            $container['oauth2_server.storage.'.$storageType] = function (Container $container) use ($storageInterface) {
+                if ($container['oauth2_server.storage.default'] instanceof $storageInterface) {
+                    return $container['oauth2_server.storage.default'];
+                }
             };
         }
 
